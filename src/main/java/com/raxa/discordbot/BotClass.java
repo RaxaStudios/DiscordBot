@@ -167,41 +167,23 @@ public class BotClass {
     }
 
     private static EmbedBuilder createEmbed(String channel, String mod, String user, String displayName, String message, String url) {
-        if (message.equals("")) {
-            embed = new EmbedBuilder()
-                    .setTitle("Deleted Message")
-                    .setAuthor(mod)
-                    .addInlineField("User", user)
-                    .addInlineField("DisplayName", displayName)
-                    .addField("Channel", ("#" + channel))
-                    .addField("Attachment", "||" + url + "||")
-                    .setColor(Color.GREEN)
-                    .setTimestampToNow();
-            return embed;
-        } else if (url.equals("")) {
-            embed = new EmbedBuilder()
-                    .setTitle("Deleted Message")
-                    .setAuthor(mod)
-                    .addInlineField("User", user)
-                    .addInlineField("DisplayName", displayName)
-                    .addField("Channel", ("#" + channel))
-                    .addField("Message", "||" + message + "||")
-                    .setColor(Color.GREEN)
-                    .setTimestampToNow();
+        embed = new EmbedBuilder()
+            .setTitle("Deleted Message")
+            .setAuthor(mod)
+            .addInlineField("User", user)
+            .addInlineField("DisplayName", displayName)
+            .addField("Channel", ("#" + channel))
+            .setColor(Color.GREEN);
 
-            return embed;
-        } else {
-            embed = new EmbedBuilder()
-                    .setTitle("Deleted Message")
-                    .setAuthor(mod)
-                    .addInlineField("User", user)
-                    .addInlineField("DisplayName", displayName)
-                    .addField("Channel", ("#" + channel))
-                    .addField("Message", "||" + message + "||")
-                    .addField("Attachment", "||" + url + "||")
-                    .setColor(Color.GREEN)
-                    .setTimestampToNow();
-            return embed;
+        if (!message.equals("")) {
+            embed.addField("Message", "||" + message + "||");
         }
+
+        if (!url.equals("")) {
+            embed.addField("Attachment", "||" + url + "||");
+        }
+
+        embed.setTimestampToNow();
+        return embed;
     }
 }
