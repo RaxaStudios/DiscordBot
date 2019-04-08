@@ -54,7 +54,6 @@ public class BotClass {
                 //ie.printStackTrace();
             }
             new DiscordApiBuilder().setToken(token).login().thenAccept(api -> {
-
                 //set message cache options
                 //possible use for attachments or thing
                 api.setMessageCacheSize(0, 60 * 60);
@@ -73,58 +72,47 @@ public class BotClass {
                         }
                     }
                 });
+
                 api.addMessageDeleteListener(event -> {
                     try {
                         channel = event.getServerTextChannel().get().getName();
-                        if (channel.equals("bot_log")) {
-                            //ignore
-                        } else {
+                        if (!channel.equals("bot_log")) {
+                            user = event.getMessageAuthor().get().getDiscriminatedName();
                             message = event.getMessage().get().getReadableContent();
+                            displayName = event.getMessageAuthor().get().getDisplayName();
+
                             if (event.getMessage().get().getAttachments().size() > 0) {
                                 url = event.getMessage().get().getAttachments().get(0).getUrl().toString();
                             } else {
                                 url = "";
-                            }
-                            user = event.getMessageAuthor().get().getDiscriminatedName();
-                            displayName = event.getMessageAuthor().get().getDisplayName();
-                            mod = "";
+                            }   
+
                             event.getServer().get().getAuditLog(1, AuditLogActionType.MESSAGE_DELETE).thenAcceptAsync(log -> {
                                 if (log.getEntries().size() > 0) {
-                                    AuditLogEntry entry = log.getEntries().get(0);
-                                    mod = entry.getUser().join().getDiscriminatedName();
+                                    AuditLogEntry lastEntry = log.getEntries().get(0);
+                                    
                                     try {
-                                        System.out.println(entry);
-                                        if (!tempId.equals(entry.getIdAsString())) {
-                                            tempId = entry.getIdAsString();
+                                        if (!tempId.equals(lastEntry.getIdAsString())) {
+                                            tempId = lastEntry.getIdAsString();
+                                            mod = lastEntry.getUser().join().getDiscriminatedName();
                                         } else {
                                             mod = user;
                                         }
-                                        /* System.out.println(entry.getTarget().get().asUser().get().getDiscriminatedName());
-                                        System.out.println(entry.getUser().get().getDiscriminatedName());
-                                        System.out.println(event.getMessage().toString());
-                                        System.out.println(event.getMessageAuthor().toString());
-                                        System.out.println(event.getMessageContent());
-                                        System.out.println(event.getReadableMessageContent());
-                                        System.out.println(event.getMessage().get().getActivity());*/
                                     } catch (Exception e) {
                                         e.printStackTrace();
                                     }
-                                    String modAction;
-                                    modAction = (nowDateFormatted() + ": "
-                                            + mod + " deleted "
-                                            + user + "'s message: \'"
-                                            + message + "\' in channel: #" + channel);
-                                    //generate embed and send
-                                    event.getServer().get().getTextChannelsByName("bot_log").get(0).sendMessage(createEmbed(channel, mod, user, displayName, message, url));
-
                                 }
                             });
+
+                            // TODO: Discord Event Log
+                            String embeddedMessage = createEmbed(channel, mod, user, displayName, message, url);
+                            event.getServer().get().getTextChannelsByName("bot_log").get(0).sendMessage(embeddedMessage);
                         }
                     } catch (Exception e) {
-                        //ignore
                         e.printStackTrace();
                     }
                 });
+
                 api.addServerMemberBanListener(event -> {
                     event.getServer().getAuditLog(1, AuditLogActionType.MEMBER_BAN_ADD).thenAcceptAsync(auditLog -> {
                         if (auditLog.getEntries().size() > 0) {
